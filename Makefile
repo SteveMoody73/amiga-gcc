@@ -427,10 +427,10 @@ CONFIG_FD2SFD := --prefix=$(PREFIX_TARGET) --target=m68k-amigaos
 
 fd2sfd: $(BUILD)/fd2sfd/_done
 
-$(BUILD)/fd2sfd/_done: $(BUILD)/bin/fd2sfd
+$(BUILD)/fd2sfd/_done: $(PREFIX_PATH)/bin/fd2sfd
 	@echo "done" >$@
 
-$(BUILD)/bin/fd2sfd: $(BUILD)/fd2sfd/Makefile $(shell find 2>/dev/null projects/fd2sfd -not \( -path projects/fd2sfd/.git -prune \) -type f)
+$(PREFIX_PATH)/bin/fd2sfd: $(BUILD)/fd2sfd/Makefile $(shell find 2>/dev/null projects/fd2sfd -not \( -path projects/fd2sfd/.git -prune \) -type f)
 	$(L0)"make fd2sfd"$(L1) $(MAKE) -C $(BUILD)/fd2sfd all $(L2)
 	@mkdir -p $(PREFIX_PATH)/bin/
 	$(L0)"install fd2sfd"$(L1) $(MAKE) -C $(BUILD)/fd2sfd install $(L2)
@@ -451,10 +451,10 @@ projects/fd2sfd/configure:
 # =================================================
 fd2pragma: $(BUILD)/fd2pragma/_done
 
-$(BUILD)/fd2pragma/_done: $(BUILD)/bin/fd2pragma
+$(BUILD)/fd2pragma/_done: $(PREFIX_PATH)/bin/fd2pragma
 	@echo "done" >$@
 
-$(BUILD)/bin/fd2pragma: $(BUILD)/fd2pragma/fd2pragma
+$(PREFIX_PATH)/bin/fd2pragma: $(BUILD)/fd2pragma/fd2pragma
 	@mkdir -p $(PREFIX_PATH)/bin/
 	$(L0)"install fd2sfd"$(L1) install $(BUILD)/fd2pragma/fd2pragma $(PREFIX_PATH)/bin/ $(L2)
 
@@ -471,10 +471,10 @@ projects/fd2pragma/makefile:
 # =================================================
 ira: $(BUILD)/ira/_done
 
-$(BUILD)/ira/_done: $(BUILD)/bin/ira
+$(BUILD)/ira/_done: $(PREFIX_PATH)/bin/ira
 	@echo "done" >$@
 
-$(BUILD)/bin/ira: $(BUILD)/ira/ira
+$(PREFIX_PATH)/bin/ira: $(BUILD)/ira/ira
 	@mkdir -p $(PREFIX_PATH)/bin/
 	$(L0)"install ira"$(L1) install $(BUILD)/ira/ira $(PREFIX_PATH)/bin/ $(L2)
 
@@ -493,10 +493,10 @@ CONFIG_SFDC := --prefix=$(PREFIX_TARGET) --target=m68k-amigaos
 
 sfdc: $(BUILD)/sfdc/_done
 
-$(BUILD)/sfdc/_done: $(BUILD)/bin/sfdc
+$(BUILD)/sfdc/_done: $(PREFIX_PATH)/bin/sfdc
 	@echo "done" >$@
 
-$(BUILD)/bin/sfdc: $(BUILD)/sfdc/Makefile $(shell find 2>/dev/null projects/sfdc -not \( -path projects/sfdc/.git -prune \)  -type f)
+$(PREFIX_PATH)/bin/sfdc: $(BUILD)/sfdc/Makefile $(shell find 2>/dev/null projects/sfdc -not \( -path projects/sfdc/.git -prune \)  -type f)
 	$(L0)"make sfdc"$(L1) $(MAKE) -C $(BUILD)/sfdc sfdc $(L2) 
 	@mkdir -p $(PREFIX_PATH)/bin/
 	$(L0)"install sfdc"$(L1) install $(BUILD)/sfdc/sfdc $(PREFIX_PATH)/bin $(L2)
@@ -949,30 +949,20 @@ $(SDKS): libnix
 # Copy needed dll files
 # =================================================
 
-ifeq ($(BUILD_TARGET),msys)
-ifneq ($(findstring MINGW32,$(UNAME_S)),)
-MINGW_PATH = /mingw32
-else
-MINGW_PATH = /mingw64
-endif
-endif
-
 install-dll: $(BUILD)/_installdll_done
 
-build/_installdll_done: $(BUILD)/newlib/_done
+$(BUILD)/_installdll_done: $(BUILD)/newlib/_done
 ifeq ($(BUILD_TARGET),msys)
-	rsync $(MINGW_PATH)/bin/libwinpthread-1.dll $(PREFIX_PATH)/bin
-	rsync $(MINGW_PATH)/bin/libwinpthread-1.dll $(PREFIX_PATH)/libexec/gcc/m68k-elf/$(GCC_VERSION)
-	rsync $(MINGW_PATH)/bin/libwinpthread-1.dll $(PREFIX_PATH)/m68k-elf/bin
-	rsync $(MINGW_PATH)/bin/libintl-8.dll $(PREFIX_PATH)/bin
-	rsync $(MINGW_PATH)/bin/libintl-8.dll $(PREFIX_PATH)/libexec/gcc/m68k-elf/$(GCC_VERSION)
-	rsync $(MINGW_PATH)/bin/libintl-8.dll $(PREFIX_PATH)/m68k-elf/bin
-	rsync $(MINGW_PATH)/bin/libiconv-2.dll $(PREFIX_PATH)/bin
-	rsync $(MINGW_PATH)/bin/libiconv-2.dll $(PREFIX_PATH)/libexec/gcc/m68k-elf/$(GCC_VERSION)
-	rsync $(MINGW_PATH)/bin/libiconv-2.dll $(PREFIX_PATH)/m68k-elf/bin
-	rsync $(MINGW_PATH)/bin/libgcc_s_dw2-1.dll $(PREFIX_PATH)/bin
-	rsync $(MINGW_PATH)/bin/libgcc_s_dw2-1.dll $(PREFIX_PATH)/libexec/gcc/m68k-elf/$(GCC_VERSION)
-	rsync $(MINGW_PATH)/bin/libgcc_s_dw2-1.dll $(PREFIX_PATH)/m68k-elf/bin
+	rsync /usr/bin/msys-2.0.dll $(PREFIX_PATH)/bin
+	rsync /usr/bin/msys-2.0.dll $(PREFIX_PATH)/libexec/gcc/m68k-elf/$(GCC_VERSION)
+	rsync /usr/bin/msys-2.0.dll $(PREFIX_PATH)/m68k-elf/bin
+	rsync /usr/bin/msys-stdc++-6.dll $(PREFIX_PATH)/bin
+	rsync /usr/bin/msys-stdc++-6.dll $(PREFIX_PATH)/libexec/gcc/m68k-elf/$(GCC_VERSION)
+	rsync /usr/bin/msys-stdc++-6.dll $(PREFIX_PATH)/m68k-elf/bin
+	rsync /usr/bin/msys-gcc_s-seh-1.dll $(PREFIX_PATH)/bin
+	rsync /usr/bin/msys-gcc_s-seh-1.dll $(PREFIX_PATH)/libexec/gcc/m68k-elf/$(GCC_VERSION)
+	rsync /usr/bin/msys-gcc_s-seh-1.dll $(PREFIX_PATH)/m68k-elf/bin
+
 endif
 	echo "done" >$@
 	touch $@
