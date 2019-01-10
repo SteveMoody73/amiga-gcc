@@ -15,16 +15,33 @@ PREFIX ?= /opt/amiga
 UNAME_S := $(shell uname -s)
 BUILD := build-$(UNAME_S)
 
-GCC_GIT := https://github.com/bebbo/gcc
-GCC_BRANCH := gcc-6-branch
 GCC_VERSION ?= $(shell cat 2>/dev/null projects/gcc/gcc/BASE-VER)
 
-BINUTILS_GIT := https://github.com/bebbo/binutils-gdb
 BINUTILS_BRANCH := amiga
+GCC_BRANCH := gcc-6-branch
 
-CFLAGS := -Os
-CXXFLAGS := $(CFLAGS)
-CFLAGS_FOR_TARGET := -Os -fomit-frame-pointer
+GIT_AMIGA_NETINCLUDE := https://github.com/bebbo/amiga-netinclude
+GIT_BINUTILS         := https://github.com/bebbo/binutils-gdb
+GIT_CLIB2            := https://github.com/bebbo/clib2
+GIT_FD2PRAGMA        := https://github.com/bebbo/fd2pragma
+GIT_FD2SFD           := https://github.com/cahirwpz/fd2sfd
+GIT_GCC              := https://github.com/bebbo/gcc
+GIT_IRA              := https://github.com/bebbo/ira
+GIT_IXEMUL           := https://github.com/bebbo/ixemul
+GIT_LHA              := https://github.com/jca02266/lha
+GIT_LIBDEBUG         := https://github.com/bebbo/libdebug
+GIT_LIBNIX           := https://github.com/bebbo/libnix
+GIT_LIBSDL12         := https://github.com/AmigaPorts/libSDL12
+GIT_NEWLIB_CYGWIN    := https://github.com/bebbo/newlib-cygwin
+GIT_SFDC             := https://github.com/adtools/sfdc
+GIT_VASM             := https://github.com/leffmann/vasm
+GIT_VBCC             := https://github.com/bebbo/vbcc
+GIT_VLINK            := https://github.com/leffmann/vlink
+
+CFLAGS ?= -Os
+CXXFLAGS ?= $(CFLAGS)
+CFLAGS_FOR_TARGET ?= -Os -fomit-frame-pointer
+CXXFLAGS_FOR_TARGET ?= $(CFLAGS_FOR_TARGET) -fno-exceptions -fno-rtti
 
 E:=CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" CFLAGS_FOR_BUILD="$(CFLAGS)" CXXFLAGS_FOR_BUILD="$(CXXFLAGS)"  CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" CXXFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)"
 
@@ -110,6 +127,12 @@ endif
 
 export PATH := $(PREFIX_PATH)/bin:$(PATH)
 
+UPDATE = __x=
+ANDPULL = ;__y=$$(git branch | grep '*' | cut -b3-);echo setting remote origin from $$(git remote get-url origin) to $$__x using branch $$__y;\
+	git remote remove origin; \
+	git remote add origin $$__x; \
+	git pull origin $$__y;\
+	git branch --set-upstream-to=origin/$$__y $$__y; \
 
 # =================================================
 
@@ -211,10 +234,10 @@ clean-ndk:
 
 clean-libnix:
 	rm -rf $(BUILD)/libnix
-	
+
 clean-ixemul:
 	rm -rf $(BUILD)/ixemul
-	
+
 clean-clib2:
 	rm -rf $(BUILD)/clib2
 
@@ -275,7 +298,7 @@ update-vlink: projects/vlink/Makefile
 
 update-libnix: projects/libnix/configure
 	@cd projects/libnix && git pull
-	
+
 update-ixemul: projects/ixemul/configure
 	@cd projects/ixemul && git pull
 
@@ -300,6 +323,7 @@ update-netinclude: projects/amiga-netinclude/README.md
 
 update-gmp:
 	@mkdir -p download
+	@mkdir -p projects
 	if [ -a download/$(GMPFILE) ]; \
 	then rm -rf projects/$(GMP); rm -rf projects/gcc/gmp; \
 	else cd download && wget ftp://ftp.gnu.org/gnu/gmp/$(GMPFILE); \
@@ -308,6 +332,7 @@ update-gmp:
 	
 update-mpc:
 	@mkdir -p download
+	@mkdir -p projects
 	if [ -a download/$(MPCFILE) ]; \
 	then rm -rf projcts/$(MPC); rm -rf projects/gcc/mpc; \
 	else cd download && wget ftp://ftp.gnu.org/gnu/mpc/$(MPCFILE); \
@@ -316,6 +341,7 @@ update-mpc:
 
 update-mpfr:
 	@mkdir -p download
+	@mkdir -p projects
 	if [ -a download/$(MPFRFILE) ]; \
 	then rm -rf projects/$(MPFR); rm -rf projects/gcc/mpfr; \
 	else cd download && wget ftp://ftp.gnu.org/gnu/mpfr/$(MPFRFILE); \
@@ -363,7 +389,7 @@ $(BUILD)/binutils/Makefile: projects/binutils/configure
 
 projects/binutils/configure:
 	@mkdir -p projects
-	@cd projects &&	git clone -b $(BINUTILS_BRANCH) --depth 16 $(BINUTILS_GIT) binutils
+	@cd projects &&	git clone -b $(BINUTILS_BRANCH) --depth 16 $(GIT_BINUTILS) binutils
 
 # =================================================
 # gcc
@@ -402,7 +428,7 @@ endif
 
 projects/gcc/configure:
 	@mkdir -p projects
-	@cd projects &&	git clone -b $(GCC_BRANCH) --depth 16 https://github.com/bebbo/gcc
+	@cd projects &&	git clone -b $(GCC_BRANCH) --depth 16 $(GIT_GCC)
 
 # =================================================
 # gprof
@@ -441,7 +467,7 @@ $(BUILD)/fd2sfd/Makefile: projects/fd2sfd/configure
 
 projects/fd2sfd/configure:
 	@mkdir -p projects
-	@cd projects &&	git clone -b master --depth 4 https://github.com/cahirwpz/fd2sfd
+	@cd projects &&	git clone -b master --depth 4 $(GIT_FD2SFD)
 	for i in $$(find patches/fd2sfd/ -type f); \
 	do if [[ "$$i" == *.diff ]] ; \
 		then j=$${i:8}; patch -N "projects/$${j%.diff}" "$$i"; fi ; done
@@ -464,7 +490,7 @@ $(BUILD)/fd2pragma/fd2pragma: projects/fd2pragma/makefile $(shell find 2>/dev/nu
 
 projects/fd2pragma/makefile:
 	@mkdir -p projects
-	@cd projects &&	git clone -b master --depth 4 https://github.com/adtools/fd2pragma
+	@cd projects &&	git clone -b master --depth 4 $(GIT_FD2PRAGMA)
 
 # =================================================
 # ira
@@ -484,7 +510,7 @@ $(BUILD)/ira/ira: projects/ira/Makefile $(shell find 2>/dev/null projects/ira -n
 
 projects/ira/Makefile:
 	@mkdir -p projects
-	@cd projects &&	git clone -b master --depth 4 https://github.com/bebbo/ira
+	@cd projects &&	git clone -b master --depth 4 $(GIT_IRA)
 
 # =================================================
 # sfdc
@@ -507,7 +533,7 @@ $(BUILD)/sfdc/Makefile: projects/sfdc/configure
 
 projects/sfdc/configure:
 	@mkdir -p projects
-	@cd projects &&	git clone -b master --depth 4 https://github.com/adtools/sfdc
+	@cd projects &&	git clone -b master --depth 4 $(GIT_SFDC)
 	for i in $$(find patches/sfdc/ -type f); \
 	do if [[ "$$i" == *.diff ]] ; \
 		then j=$${i:8}; patch -N "projects/$${j%.diff}" "$$i"; fi ; done
@@ -533,7 +559,7 @@ $(BUILD)/vasm/Makefile: projects/vasm/Makefile $(shell find 2>/dev/null projects
 
 projects/vasm/Makefile:
 	@mkdir -p projects
-	@cd projects &&	git clone -b master --depth 4 https://github.com/leffmann/vasm
+	@cd projects &&	git clone -b master --depth 4 $(GIT_VASM)
 
 # =================================================
 # vbcc
@@ -560,7 +586,7 @@ $(BUILD)/vbcc/Makefile: projects/vbcc/Makefile $(shell find 2>/dev/null projects
 
 projects/vbcc/Makefile:
 	@mkdir -p projects
-	@cd projects &&	git clone -b master --depth 4 https://github.com/bebbo/vbcc
+	@cd projects &&	git clone -b master --depth 4 $(GIT_VBCC)
 
 # =================================================
 # vlink
@@ -581,7 +607,7 @@ $(BUILD)/vlink/Makefile: projects/vlink/Makefile
 
 projects/vlink/Makefile:
 	@mkdir -p projects
-	@cd projects &&	git clone -b master --depth 4 https://github.com/leffmann/vlink
+	@cd projects &&	git clone -b master --depth 4 $(GIT_VLINK)
 
 .PHONY: lha
 lha: $(BUILD)/_lha_done
@@ -589,7 +615,7 @@ lha: $(BUILD)/_lha_done
 $(BUILD)/_lha_done:
 	@if [ ! -e "$$(which lha 2>/dev/null)" ]; then \
 	  cd $(BUILD) && rm -rf lha; \
-	  $(L00)"clone lha"$(L1) git clone https://github.com/jca02266/lha; $(L2); \
+	  $(L00)"clone lha"$(L1) git clone $(GIT_LHA); $(L2); \
 	  cd lha; \
 	  $(L00)"configure lha"$(L1) aclocal; autoheader; automake -a; autoconf; ./configure; $(L2); \
 	  $(L00)"make lha"$(L1) make all; $(L2); \
@@ -741,7 +767,7 @@ $(BUILD)/_netinclude: projects/amiga-netinclude/README.md $(BUILD)/ndk-include_n
 
 projects/amiga-netinclude/README.md: 
 	@mkdir -p projects
-	@cd projects &&	git clone -b master --depth 4 https://github.com/bebbo/amiga-netinclude
+	@cd projects &&	git clone -b master --depth 4 $(GIT_AMIGA_NETINCLUDE)
 
 # =================================================
 # libamiga
@@ -789,7 +815,7 @@ $(BUILD)/libnix/Makefile: $(BUILD)/newlib/_done $(BUILD)/ndk-include_ndk $(BUILD
 	
 projects/libnix/configure:
 	@mkdir -p projects
-	@cd projects &&	git clone -b master --depth 4 https://github.com/bebbo/libnix
+	@cd projects &&	git clone -b master --depth 4 $(GIT_LIBNIX)
 
 # =================================================
 # gcc libs
@@ -827,7 +853,7 @@ $(BUILD)/clib2/_done: projects/clib2/LICENSE $(shell find 2>/dev/null projects/c
 
 projects/clib2/LICENSE:
 	@mkdir -p projects
-	@cd projects && git clone -b master --depth 4 https://github.com/bebbo/clib2
+	@cd projects && git clone -b master --depth 4 $(GIT_CLIB2)
 
 # =================================================
 # libdebug
@@ -847,7 +873,7 @@ $(BUILD)/libdebug/Makefile: $(BUILD)/libnix/_done projects/libdebug/configure $(
 
 projects/libdebug/configure:
 	@mkdir -p projects
-	@cd projects &&	git clone -b master --depth 4 https://github.com/bebbo/libdebug
+	@cd projects &&	git clone -b master --depth 4 $(GIT_LIBDEBUG)
 	@touch -t 0001010000 projects/libdebug/configure.ac
 
 # =================================================
@@ -876,13 +902,13 @@ $(BUILD)/libSDL12/Makefile.bax: $(BUILD)/libnix/_done projects/libSDL12/Makefile
 
 projects/libSDL12/Makefile.bax:
 	@mkdir -p projects
-	@cd projects &&	git clone -b master --depth 4  https://github.com/AmigaPorts/libSDL12
+	@cd projects &&	git clone -b master --depth 4  $(GIT_LIBSDL12)
 
 
 # =================================================
 # newlib
 # =================================================
-NEWLIB_CONFIG := CC=m68k-amigaos-gcc
+NEWLIB_CONFIG := CC=m68k-amigaos-gcc CXX=m68k-amigaos-g++
 NEWLIB_FILES = $(shell find 2>/dev/null projects/newlib-cygwin/newlib -type f)
 
 .PHONY: newlib
@@ -917,18 +943,19 @@ endif
 
 $(BUILD)/newlib/newlib/Makefile: projects/newlib-cygwin/configure  
 	@mkdir -p $(BUILD)/newlib/newlib
-	$(L0)"configure newlib"$(L1) cd $(BUILD)/newlib/newlib && $(NEWLIB_CONFIG) CFLAGS="$(CFLAGS_FOR_TARGET)" ../../../projects/newlib-cygwin/newlib/configure --host=m68k-amigaos --prefix=$(PREFIX_TARGET) $(L2) 
+	@rsync -a $(PWD)/projects/newlib-cygwin/newlib/libc/include/ $(PREFIX_PATH)/m68k-amigaos/sys-include
+	$(L0)"configure newlib"$(L1) cd $(BUILD)/newlib/newlib && $(NEWLIB_CONFIG) CFLAGS="$(CFLAGS_FOR_TARGET)" CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" $(PWD)/projects/newlib-cygwin/newlib/configure --host=m68k-amigaos --prefix=$(PREFIX) --enable-newlib-io-long-long --enable-newlib-io-c99-formats --enable-newlib-reent-small --enable-newlib-mb $(L2)
 
 projects/newlib-cygwin/newlib/configure: 
 	@mkdir -p projects
-	@cd projects &&	git clone -b amiga --depth 4  https://github.com/bebbo/newlib-cygwin
+	@cd projects &&	git clone -b amiga --depth 4  $(GIT_NEWLIB_CYGWIN)
 
 # =================================================
 # ixemul
 # =================================================
 projects/ixemul/configure:
 	@mkdir -p projects
-	@cd projects &&	git clone https://github.com/bebbo/ixemul
+	@cd projects &&	git clone $(GIT_IXEMUL)
 
 # =================================================
 # sdk installation
@@ -944,6 +971,30 @@ all-sdk: $(SDKS)
 
 $(SDKS): libnix
 	$(MAKE) sdk=$@ 
+
+# =================================================
+# update repos
+# =================================================
+.PHONY: update-repos
+update-repos:
+	@cd projects/amiga-netinclude && $(UPDATE)$(GIT_AMIGA_NETINCLUDE)$(ANDPULL)
+	@cd projects/binutils         && $(UPDATE)$(GIT_BINUTILS)$(ANDPULL)
+	@cd projects/clib2            && $(UPDATE)$(GIT_CLIB2)$(ANDPULL)
+	@cd projects/fd2pragma        && $(UPDATE)$(GIT_FD2PRAGMA)$(ANDPULL)
+	@cd projects/fd2sfd           && $(UPDATE)$(GIT_FD2SFD)$(ANDPULL)
+	@cd projects/gcc              && $(UPDATE)$(GIT_GCC)$(ANDPULL)
+	@cd projects/ira              && $(UPDATE)$(GIT_IRA)$(ANDPULL)
+	@cd projects/ixemul           && $(UPDATE)$(GIT_IXEMUL)$(ANDPULL)
+#	@cd projects/lha              && $(UPDATE)$(GIT_LHA)$(ANDPULL)
+	@cd projects/libdebug         && $(UPDATE)$(GIT_LIBDEBUG)$(ANDPULL)
+	@cd projects/libnix           && $(UPDATE)$(GIT_LIBNIX)$(ANDPULL)
+	@cd projects/libsdl12         && $(UPDATE)$(GIT_LIBSDL12)$(ANDPULL)
+	@cd projects/newlib-cygwin    && $(UPDATE)$(GIT_NEWLIB_CYGWIN)$(ANDPULL)
+	@cd projects/sfdc             && $(UPDATE)$(GIT_SFDC)$(ANDPULL)
+	@cd projects/vasm             && $(UPDATE)$(GIT_VASM)$(ANDPULL)
+	@cd projects/vbcc             && $(UPDATE)$(GIT_VBCC)$(ANDPULL)
+	@cd projects/vlink            && $(UPDATE)$(GIT_VLINK)$(ANDPULL)
+
 
 # =================================================
 # Copy needed dll files
@@ -970,7 +1021,7 @@ endif
 # =================================================
 # info
 # =================================================
-.PHONY: info v
+.PHONY: info v r
 info:
 	@echo $@ $(UNAME_S)
 	@echo PREFIX=$(PREFIX_PATH)
