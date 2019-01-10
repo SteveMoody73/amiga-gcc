@@ -1004,15 +1004,15 @@ install-dll: $(BUILD)/_installdll_done
 
 $(BUILD)/_installdll_done: $(BUILD)/newlib/_done
 ifeq ($(BUILD_TARGET),msys)
-	rsync /usr/bin/msys-2.0.dll $(PREFIX_PATH)/bin
-	rsync /usr/bin/msys-2.0.dll $(PREFIX_PATH)/libexec/gcc/m68k-amigaos/$(GCC_VERSION)
-	rsync /usr/bin/msys-2.0.dll $(PREFIX_PATH)/m68k-amigaos/bin
-	rsync /usr/bin/msys-stdc++-6.dll $(PREFIX_PATH)/bin
-	rsync /usr/bin/msys-stdc++-6.dll $(PREFIX_PATH)/libexec/gcc/m68k-amigaos/$(GCC_VERSION)
-	rsync /usr/bin/msys-stdc++-6.dll $(PREFIX_PATH)/m68k-amigaos/bin
-	rsync /usr/bin/msys-gcc_s-seh-1.dll $(PREFIX_PATH)/bin
-	rsync /usr/bin/msys-gcc_s-seh-1.dll $(PREFIX_PATH)/libexec/gcc/m68k-amigaos/$(GCC_VERSION)
-	rsync /usr/bin/msys-gcc_s-seh-1.dll $(PREFIX_PATH)/m68k-amigaos/bin
+	@rsync /usr/bin/msys-2.0.dll $(PREFIX_PATH)/bin
+	@rsync /usr/bin/msys-2.0.dll $(PREFIX_PATH)/libexec/gcc/m68k-amigaos/$(GCC_VERSION)
+	@rsync /usr/bin/msys-2.0.dll $(PREFIX_PATH)/m68k-amigaos/bin
+	@rsync /usr/bin/msys-stdc++-6.dll $(PREFIX_PATH)/bin
+	@rsync /usr/bin/msys-stdc++-6.dll $(PREFIX_PATH)/libexec/gcc/m68k-amigaos/$(GCC_VERSION)
+	@rsync /usr/bin/msys-stdc++-6.dll $(PREFIX_PATH)/m68k-amigaos/bin
+	@rsync /usr/bin/msys-gcc_s-seh-1.dll $(PREFIX_PATH)/bin
+	@rsync /usr/bin/msys-gcc_s-seh-1.dll $(PREFIX_PATH)/libexec/gcc/m68k-amigaos/$(GCC_VERSION)
+	@rsync /usr/bin/msys-gcc_s-seh-1.dll $(PREFIX_PATH)/m68k-amigaos/bin
 
 endif
 	echo "done" >$@
